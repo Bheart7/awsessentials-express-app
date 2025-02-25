@@ -44,7 +44,7 @@ jobs:
                   curl -X PUT "https://apistaging.clevero.co/api/v3/internal/features/dynamic/233450/${{ steps.extract_entry_id.outputs.entry_id }}" \
                         -H "accept: application/json, text/plain, */*" \
                         -H "accept-language: en-US,en;q=0.9" \
-                        -H "authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik5EVkdOalk1UlRnelJrUkJRVEV5UkVVM1FqVkZNemxGUVRSRVEwRkdPREpGT1VRek5FRTBSQSJ9.eyJpc3MiOiJodHRwczovL2F1dGguY2xldmVyby5jby8iLCJzdWIiOiJhdXRoMHw2Mzg5MjkwNWE0MjE2ZDI0Zjc3MjZhOTEiLCJhdWQiOlsiaHR0cHM6Ly93d3cua2FseXN5cy5jb20vIiwiaHR0cHM6Ly9sZXp5ZW9oLmF1LmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE3NDA0Nzc1OTcsImV4cCI6MTc0MDUyMDc5Nywic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCIsImF6cCI6IjJEbFU1NndiSTRLdkpzTW9ZSGc1bXdQVTMzUHJnOXM0In0.s7bB69EKDnbEm0gQapeYSMUKwvekTXepBBwcKKdV2Lxm07IhJqc74CE3pzdWN3vgfiuwv05vCE27E3o3chIpuyXr1cDepWulhPLGvx8Ma6vm-v9u3LEwDuxN2shN8Hn_achLc2xT9bl5KHylw4MbqjxUYN1lH4nsAlUHafKBxEBVNMItbX04HSHElkwMJ4GiSTTxERjTyaD3ww_H84MhQM4wx5enQ0PtOoSGT24icqQW_N19IBxvDpyJGUACB5rrvX7j5-44DVydo538GpTzyW12W5ebwLJBlB7mBhBemS2HuvvG-CpzeZRu_quLCyKGnN3D2XqKG_-B2n6NFYBD8A" \
+                        -H "authorization: Bearer ${{ secrets.API_SECRET }}" \
                         -H "content-type: application/json;charset=UTF-8" \
                         -H "origin: https://staging.clevero.co" \
                         -H "priority: u=1, i" \
