@@ -1,48 +1,62 @@
 name: PR Approval
 
 on:
-  pull_request_review:
-    types: [submitted]
+    pull_request_review:
+        types: [submitted]
+    workflow_dispatch:
+        inputs:
+            pr_title:
+                description: "Pull Request Title (for testing)"
+                required: true
+                default: "Update feature #12345"
 
 jobs:
-  update-backlog-status:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check PR approval
-        id: check_pr_approval
-        run: |
-          if [[ "${{ github.event.review.state }}" == "approved" ]]; then
-            echo "approved=true" >> $GITHUB_ENV
-          else
-            echo "approved=false" >> $GITHUB_ENV
-        shell: bash
-      
-      - name: Extract entryId from PR title
-        id: extract_entry_id
-        run: |
-          ENTRY_ID=$(echo "${{ github.event.pull_request.title }}" | grep -oE '[0-9]+$' || echo "")
-          echo "entry_id=$ENTRY_ID" >> $GITHUB_ENV
-        shell: bash
-      
-      - name: Call External API
-        if: env.approved == 'true'
-        run: |
-          curl -X PUT "https://apistaging.clevero.co/api/v3/internal/features/dynamic/233450/${{ env.entry_id }}" \
-                -H "accept: application/json, text/plain, */*" \
-                -H "accept-language: en-US,en;q=0.9" \
-                -H "authorization: Bearer ${{ secrets.API_SECRET }}" \
-                -H "content-type: application/json;charset=UTF-8" \
-                -H "origin: https://staging.clevero.co" \
-                -H "priority: u=1, i" \
-                -H "referer: https://staging.clevero.co/" \
-                -H "role: 126" \
-                -H "sec-ch-ua: \"Not(A:Brand\";v=\"99\", \"Microsoft Edge\";v=\"133\", \"Chromium\";v=\"133\"" \
-                -H "sec-ch-ua-mobile: ?0" \
-                -H "sec-ch-ua-platform: \"Windows\"" \
-                -H "sec-fetch-dest: empty" \
-                -H "sec-fetch-mode: cors" \
-                -H "sec-fetch-site: same-site" \
-                -H "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" \
-                --data-raw '{"values":{"status":["2351441"]},"subrecords":{"toAdd":{},"toEdit":{},"toDelete":{},"subrecordInternalIds":[]}}'
-      env:
-        API_SECRET: ${{ secrets.API_SECRET }}
+    update-backlog-status:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check PR approval
+              id: check_pr_approval
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    echo "approved=true" >> $GITHUB_OUTPUT
+                  elif [ "${{ github.event.review.state }}" = "approved" ]; then
+                    echo "approved=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "approved=false" >> $GITHUB_OUTPUT
+                  fi
+              shell: bash
+
+            - name: Extract entryId from PR title
+              id: extract_entry_id
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    PR_TITLE="${{ github.event.inputs.pr_title }}"
+                  else
+                    PR_TITLE="${{ github.event.pull_request.title }}"
+                  fi
+                  ENTRY_ID=$(echo "$PR_TITLE" | grep -oE '[0-9]+$' || echo "")
+                  echo "entry_id=$ENTRY_ID" >> $GITHUB_OUTPUT
+              shell: bash
+
+            - name: Call External API
+              if: steps.check_pr_approval.outputs.approved == 'true'
+              run: |
+                  curl -X PUT "https://apistaging.clevero.co/api/v3/internal/features/dynamic/233450/${{ steps.extract_entry_id.outputs.entry_id }}" \
+                        -H "accept: application/json, text/plain, */*" \
+                        -H "accept-language: en-US,en;q=0.9" \
+                        -H "authorization: Bearer ${{ secrets.API_SECRET }}" \
+                        -H "content-type: application/json;charset=UTF-8" \
+                        -H "origin: https://staging.clevero.co" \
+                        -H "priority: u=1, i" \
+                        -H "referer: https://staging.clevero.co/" \
+                        -H "role: 126" \
+                        -H "sec-ch-ua: \"Not(A:Brand\";v=\"99\", \"Microsoft Edge\";v=\"133\", \"Chromium\";v=\"133\"" \
+                        -H "sec-ch-ua-mobile: ?0" \
+                        -H "sec-ch-ua-platform: \"Windows\"" \
+                        -H "sec-fetch-dest: empty" \
+                        -H "sec-fetch-mode: cors" \
+                        -H "sec-fetch-site: same-site" \
+                        -H "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" \
+                        --data-raw '{"values":{"status":["2351441"]},"subrecords":{"toAdd":{},"toEdit":{},"toDelete":{},"subrecordInternalIds":[]}}'
+              env:
+                  API_SECRET: ${{ secrets.API_SECRET }}
